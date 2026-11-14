@@ -1,0 +1,19 @@
+# 가상 환경과 캐시
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 만든 배포본(릴리스에 따로 올린다)
+dist/
+build/
+
+# 개발 중에만 쓰는 것
+spike0/
+dev_received/
+graft/
+.claude/
+design-system/
+.ignore

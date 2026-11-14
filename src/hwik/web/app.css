@@ -1,0 +1,534 @@
+/* 휴대폰 화면. 글꼴과 그림은 밖에서 받지 않는다(외부로 아무 요청도 보내지 않기 위해). */
+
+:root {
+  color-scheme: light;
+
+  --ink: #0b1026;        /* 글자, 고르기 단추 */
+  --paper: #f1f3fa;      /* 아래쪽 바탕 */
+  --cobalt: #2340f0;     /* 상태판: 기다리는 중 */
+  --deep: #101a6b;       /* 상태판: 차오르는 색(보내는 중) */
+  --done: #07704c;       /* 상태판: 다 보냄 (흰 글자와 대비 6.1) */
+  --failed: #b92a26;     /* 상태판: 못 보냄 (흰 글자와 대비 6.1) */
+  --line: #d3d8ea;       /* 구분선(조작 부품이 아닌 곳) */
+  --control-line: #7f89b0; /* 입력 칸 테두리 (바탕과 대비 3 이상) */
+  --muted: #5a6282;
+  --on-stage: #ffffff;
+  --on-stage-soft: rgb(255 255 255 / 88%); /* 세 가지 상태판 색 모두에서 대비 4.5 이상 */
+  --ring: var(--cobalt); /* 밝은 바탕 위의 초점 표시 */
+  --press: 120ms;        /* 눌렀을 때 반응 */
+
+  --font: "Pretendard", "SUIT", "Apple SD Gothic Neo", "SamsungOneKorean", "Noto Sans KR",
+    "Malgun Gothic", system-ui, sans-serif;
+  --text-headline: clamp(2.25rem, 11.5vw, 3.5rem);
+  --text-body: 1.0625rem;
+  --text-small: 0.9375rem;
+
+  --gutter: clamp(1.25rem, 6vw, 2rem);
+  --radius-stage: 1.75rem;
+  --radius-control: 1.25rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+p,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── 상태판: 화면 위쪽. 보내는 동안 아래에서 위로(PC 쪽으로) 색이 차오른다 ── */
+
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 46svh;
+  padding: calc(env(safe-area-inset-top) + 1.25rem) var(--gutter) 1.75rem;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-stage) var(--radius-stage);
+  background: var(--cobalt);
+  color: var(--on-stage);
+  transition: background-color 400ms var(--ease-out);
+}
+
+.stage__fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--deep);
+  transform: scaleY(var(--progress, 0));
+  transform-origin: bottom;
+  transition: transform 240ms linear;
+}
+
+.stage__link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--on-stage-soft);
+}
+
+.stage__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #7dffc8;
+}
+
+.stage__headline {
+  margin-top: auto;
+  font-size: var(--text-headline);
+  font-weight: 800;
+  line-height: 1.14;
+  letter-spacing: -0.035em;
+  white-space: pre-line;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage__detail {
+  margin-top: 0.875rem;
+  min-height: 3em; /* 글이 바뀌어도 화면이 들썩이지 않게 두 줄 자리를 잡아 둔다 */
+  color: var(--on-stage-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.stage__cancel {
+  align-self: flex-start;
+  min-height: 2.75rem; /* 손가락으로 누르기에 충분한 크기 */
+  margin-top: 0.75rem;
+  padding: 0 1.25rem;
+  cursor: pointer;
+  transition: background-color var(--press) ease-out;
+  border: 1.5px solid rgb(255 255 255 / 55%);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--on-stage);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.stage__cancel:active {
+  background: rgb(255 255 255 / 16%);
+}
+
+.stage__check {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1rem);
+  right: var(--gutter);
+  width: 3rem;
+  height: 3rem;
+  opacity: 0;
+}
+
+.stage__check path {
+  fill: none;
+  stroke: var(--on-stage);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+}
+
+body[data-state="done"] .stage {
+  background: var(--done);
+}
+
+body[data-state="done"] .stage__fill {
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+body[data-state="done"] .stage__check {
+  opacity: 1;
+}
+
+body[data-state="done"] .stage__check path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 420ms var(--ease-out) 120ms;
+}
+
+body[data-state="failed"] .stage {
+  background: var(--failed);
+}
+
+body[data-state="failed"] .stage__fill {
+  opacity: 0;
+}
+
+body[data-state="failed"] .stage__dot {
+  background: #ffd0cc;
+}
+
+/* ── 고르기 단추 ── */
+
+.actions {
+  padding: 1.5rem var(--gutter) 0.5rem;
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: 0 1.5rem;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: #fff;
+  font-size: 1.3125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  gap: 0.625rem;
+  box-shadow: 0 0.875rem 1.75rem -0.875rem rgb(11 16 38 / 55%);
+  transition: transform var(--press) var(--ease-out), box-shadow var(--press) var(--ease-out);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pick:active {
+  transform: scale(0.975);
+  box-shadow: 0 0.375rem 0.75rem -0.5rem rgb(11 16 38 / 55%);
+}
+
+#picker:focus-visible + .pick {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.stage__cancel:focus-visible {
+  outline: 3px solid var(--on-stage);
+  outline-offset: 3px;
+}
+
+.pick__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body[data-state="sending"] .pick {
+  background: var(--line);
+  color: var(--muted);
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.hint {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--muted);
+}
+
+/* ── PC에서 온 것, PC로 글자 보내기 ── */
+
+.panel {
+  padding: 1.25rem var(--gutter) 0.25rem;
+}
+
+.panel__title {
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
+.inbox {
+  list-style: none;
+}
+
+.inbox__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.inbox__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.inbox__size {
+  display: block;
+  font-size: var(--text-small);
+  font-weight: 400;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.inbox__text {
+  max-height: 7.5em;
+  overflow: auto;
+  white-space: pre-wrap;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.inbox__action,
+.note__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  border: 0;
+  border-radius: 0.875rem;
+  background: var(--cobalt);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--press) ease-out;
+}
+
+.inbox__action:active,
+.note__send:active {
+  background: var(--deep);
+}
+
+.inbox__action:focus-visible,
+.note__send:focus-visible,
+.note__text:focus-visible,
+.note__toggle:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 글자 보내기는 가끔 쓰는 기능이라 접어 두고, 누르면 펼친다. */
+.note__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.75rem;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: var(--text-small);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.note__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.note__toggle::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.25rem;
+  border: solid var(--ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: transform 180ms var(--ease-out);
+}
+
+.note[open] .note__toggle::after {
+  transform: rotate(-135deg);
+}
+
+.note__text {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1.5px solid var(--control-line);
+  border-radius: 0.875rem;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.note__send {
+  width: 100%;
+  margin-top: 0.625rem;
+  background: var(--ink);
+}
+
+.note__send:disabled {
+  background: var(--line);
+  color: var(--muted);
+}
+
+.note__status {
+  min-height: 1.5em;
+  margin-top: 0.5rem;
+  font-size: var(--text-small);
+  color: var(--muted);
+}
+
+.note__status--failed {
+  color: var(--failed);
+}
+
+/* ── 이번에 보낸 것 ── */
+
+.sent {
+  padding: 1.25rem var(--gutter) calc(env(safe-area-inset-bottom) + 2rem);
+}
+
+.sent__title {
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
+.sent__list {
+  list-style: none;
+}
+
+.sent__item {
+  display: grid;
+  grid-template-columns: 1.25rem 1fr auto;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.8125rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.sent__mark {
+  align-self: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--done);
+  position: relative;
+}
+
+.sent__mark::after {
+  content: "";
+  position: absolute;
+  left: 0.4375rem;
+  top: 0.25rem;
+  width: 0.3125rem;
+  height: 0.5625rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sent__item--failed .sent__mark {
+  background: var(--failed);
+}
+
+.sent__item--failed .sent__mark::after {
+  left: 0.5625rem;
+  top: 0.25rem;
+  width: 0;
+  height: 0.75rem;
+  border-width: 0 2px 0 0;
+  transform: none;
+}
+
+.sent__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sent__note {
+  font-size: var(--text-small);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sent__item--failed .sent__note {
+  color: var(--failed);
+}
+
+.noscript {
+  margin: var(--gutter);
+  padding: 1rem;
+  border: 1.5px solid var(--failed);
+  border-radius: var(--radius-control);
+  color: var(--failed);
+  font-weight: 600;
+}
+
+/* ── 펼친 폴더블·태블릿처럼 넓은 화면: 상태판을 왼쪽에 세운다 ── */
+
+@media (min-width: 44rem) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    min-height: 100svh;
+  }
+
+  .stage {
+    grid-row: 1 / -1;
+    min-height: 100svh;
+    border-radius: 0 var(--radius-stage) var(--radius-stage) 0;
+    padding-bottom: 3rem;
+  }
+
+  .actions {
+    padding-top: 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}

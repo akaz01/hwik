@@ -1,0 +1,35 @@
+Hwik이 함께 싣는 오픈소스
+=========================
+
+각 부품의 라이선스 전문은 이 폴더의 packages 아래에 원본 그대로 들어 있습니다.
+
+1. Python 3.12 (실행 환경)
+   - 라이선스: Python Software Foundation License Version 2
+   - https://www.python.org/
+   - 배포본의 Hwik.exe는 Python 재단이 서명한 pythonw.exe를 이름만 바꾼 것입니다(내용은 바꾸지 않았습니다).
+
+2. Qt 6 / PySide6 (Qt for Python) — 화면
+   - 라이선스: GNU Lesser General Public License v3 (LGPL-3.0)
+   - https://www.qt.io/  ·  https://doc.qt.io/qtforpython-6/
+   - Qt와 PySide6는 고치지 않고, 따로 떨어진 동적 라이브러리(DLL) 그대로 실었습니다.
+     runtime\Lib\site-packages\PySide6 와 shiboken6 폴더의 파일을 같은 이름의 다른 판으로 바꿔 넣어 쓸 수 있습니다.
+   - 소스 코드: https://download.qt.io/official_releases/QtForPython/
+
+3. segno — QR 만들기
+   - 라이선스: BSD 3-Clause
+   - https://github.com/heuer/segno
+
+4. pi-heif, libheif, libde265 — 아이폰 사진(HEIC)을 붙여넣을 그림으로 풀기
+   - pi-heif: BSD 3-Clause  ·  https://github.com/bigcat88/pillow_heif
+   - libheif: GNU Lesser General Public License v3 (LGPL-3.0)  ·  https://github.com/strukturag/libheif
+   - libde265: GNU Lesser General Public License v3 (LGPL-3.0)  ·  https://github.com/strukturag/libde265
+   - 고치지 않고 따로 떨어진 동적 라이브러리(DLL) 그대로 실었습니다(runtime\Lib\site-packages 의 libheif-*.dll,
+     libde265-*.dll). 같은 이름의 다른 판으로 바꿔 넣어 쓸 수 있습니다. 해독 전용이며 인코더는 싣지 않았습니다.
+   - 함께 든 GCC 런타임(libgcc, libstdc++, libwinpthread)은 GCC Runtime Library Exception이 붙은 GPL-3.0 / MIT 계열입니다.
+
+5. Pillow — 그림 다루기(pi-heif가 쓴다)
+   - 라이선스: MIT-CMU (HPND)
+   - https://python-pillow.github.io/
+
+6. Microsoft Visual C++ 런타임 (msvcp140*.dll, vcruntime140*.dll)
+   - Microsoft가 다시 배포를 허용한 구성 요소로, Python과 PySide6 배포본에 들어 있던 것을 그대로 실었습니다.

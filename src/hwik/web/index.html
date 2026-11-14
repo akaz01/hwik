@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2340f0">
+<title>Hwik</title>
+<link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
+</head>
+<body data-state="idle">
+<main class="layout">
+  <section class="stage" aria-live="polite">
+    <div class="stage__fill" aria-hidden="true"></div>
+    <svg class="stage__check" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 17l7 7L26 9"/></svg>
+    <p class="stage__link"><span class="stage__dot" aria-hidden="true"></span><span id="link">PC와 연결됨</span></p>
+    <h1 class="stage__headline" id="headline">보낼 파일을
+골라 주세요</h1>
+    <p class="stage__detail" id="detail">사진, 영상, 문서 모두 보낼 수 있습니다.</p>
+    <button class="stage__cancel" id="cancel" type="button" hidden>보내기 취소</button>
+  </section>
+
+  <section class="actions">
+    <input class="visually-hidden" id="picker" type="file" multiple>
+    <label class="pick" for="picker">
+      <svg class="pick__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14"/></svg>
+      <span id="pick-label">사진·파일 고르기</span>
+    </label>
+    <p class="hint" id="hint">고르면 바로 PC로 보냅니다.</p>
+  </section>
+
+  <section class="panel" id="inbox" aria-labelledby="inbox-title" hidden>
+    <h2 class="panel__title" id="inbox-title">PC에서 온 것</h2>
+    <ul class="inbox" id="inbox-list"></ul>
+  </section>
+
+  <details class="panel note" id="note">
+    <summary class="note__toggle" id="note-title">PC로 글자 보내기</summary>
+    <textarea class="note__text" id="note-text" rows="3" aria-labelledby="note-title"
+      placeholder="여기에 쓰거나 붙여넣으세요"></textarea>
+    <button class="note__send" id="note-send" type="button">글자 보내기</button>
+    <p class="note__status" id="note-status" role="status"></p>
+  </details>
+
+  <section class="sent" id="sent" aria-labelledby="sent-title" hidden>
+    <h2 class="sent__title" id="sent-title">이번에 보낸 것</h2>
+    <ul class="sent__list" id="sent-list"></ul>
+  </section>
+</main>
+<noscript><p class="noscript">이 화면은 자바스크립트가 켜져 있어야 동작합니다. 브라우저 설정에서 켜 주세요.</p></noscript>
+</body>
+</html>

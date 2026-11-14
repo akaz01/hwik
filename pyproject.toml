@@ -1,0 +1,20 @@
+[project]
+name = "hwik"
+version = "0.1.2"
+description = "휴대폰과 PC가 같은 와이파이에서 QR 하나로 파일과 글자를 주고받는 윈도우 트레이 도구"
+requires-python = ">=3.10"
+dependencies = [
+    "PySide6-Essentials>=6.6",  # PC 화면(창, 시계 옆 아이콘). core 묶음은 쓰지 않는다
+    "segno>=1.6",  # QR 만들기(BSD-3-Clause, 순수 Python)
+    "pi-heif>=1.0",  # 아이폰 사진(HEIC)을 붙여넣을 그림으로 풀기(해독 전용, Pillow를 함께 쓴다)
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5"]
+
+[project.gui-scripts]
+hwik = "hwik.app:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
